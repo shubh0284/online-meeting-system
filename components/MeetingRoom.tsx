@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CallControls,
   CallParticipantsList,
@@ -12,7 +12,9 @@ import {
 } from '@stream-io/video-react-sdk';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Users, LayoutList } from 'lucide-react';
+
 import CaptionBox from '@/components/CaptionBox';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 import {
   DropdownMenu,
@@ -31,9 +33,24 @@ const MeetingRoom = () => {
   const searchParams = useSearchParams();
   const isPersonalRoom = !!searchParams.get('personal');
   const router = useRouter();
+
   const [layout, setLayout] = useState<CallLayoutType>('speaker-left');
   const [showParticipants, setShowParticipants] = useState(false);
-  const [showCaptions, setShowCaptions] = useState(false); // 👈 state for captions
+  const [showCaptions, setShowCaptions] = useState(false);
+
+  const { transcript } = useSpeechRecognition(showCaptions);
+  const [captionLog, setCaptionLog] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (transcript) {
+      setCaptionLog((prev) => {
+        if (prev[prev.length - 1] !== transcript) {
+          return [...prev, transcript];
+        }
+        return prev;
+      });
+    }
+  }, [transcript]);
 
   const { useCallCallingState } = useCallStateHooks();
   const callingState = useCallCallingState();
@@ -59,9 +76,14 @@ const MeetingRoom = () => {
         </div>
 
         <div
-          className={cn('h-[calc(100vh-86px)] hidden ml-2', {
-            'show-block': showParticipants,
-          })}
+          className={cn(
+            'h-[calc(100vh-86px)] transition-all duration-300 ml-2',
+            {
+              hidden: !showParticipants,
+              'w-[200px]': showCaptions,
+              'w-[300px]': !showCaptions,
+            }
+          )}
         >
           <CallParticipantsList onClose={() => setShowParticipants(false)} />
         </div>
@@ -95,7 +117,7 @@ const MeetingRoom = () => {
         </DropdownMenu>
 
         {/* Captions toggle */}
-        <button onClick={() => setShowCaptions(prev => !prev)}>
+        <button onClick={() => setShowCaptions((prev) => !prev)}>
           <div
             className={`cursor-pointer rounded-2xl px-4 py-2 transition-colors duration-200 ${
               showCaptions
@@ -120,7 +142,12 @@ const MeetingRoom = () => {
       </div>
 
       {/* Captions Component */}
-      <CaptionBox active={showCaptions} />
+      <CaptionBox
+        active={showCaptions}
+        transcript={transcript}
+        captionLog={captionLog}
+        onClose={() => setShowCaptions(false)}
+      />
     </section>
   );
 };
