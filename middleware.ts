@@ -15,12 +15,12 @@ export default clerkMiddleware(async (auth, req) => {
     const { userId } = await auth();
     if (!userId) {
       const signInUrl = new URL("/sign-in", req.url);
-      signInUrl.searchParams.set("returnBackUrl", req.url);
+      signInUrl.searchParams.set("redirectUrl", req.url);
       return NextResponse.redirect(signInUrl);
     }
   }
 });
 
-export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
-};
+// export const config = {
+//   matcher: ["/((?!_next).*)", "/", "/(api|trpc)(.*)"],
+// };
