@@ -42,7 +42,7 @@
     "eslint-config-next": "15.0.7",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-n": "^17.15.0",
+    "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-tailwindcss": "^3.14.3",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
